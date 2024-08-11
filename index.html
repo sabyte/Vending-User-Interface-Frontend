@@ -1,87 +1,56 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment with bKash</title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    
-    <!-- Include jQuery -->
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    
-    <!-- Include the bKash Checkout Script -->
-    <script src="https://scripts.sandbox.bka.sh/versions/1.2.0-beta/checkout/bKash-checkout-sandbox.js"></script>
-</head>
-<body>
-    <div class="container mt-5">
-        <h2>Payment with bKash</h2>
-        <button id="bKash_button" class="btn btn-primary" disabled>Pay with bKash</button>
-    </div>
+let id_token;
 
-    <script>
-        // Function to generate Access Token
-        function getAccessToken() {
-            return $.ajax({
-                url: 'https://tokenized.pay.bka.sh/v1.2.0-beta/tokenized/checkout/token/grant',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    app_key: 'Pc0yKAFRbzf6N3yk9msFYs8Ttc',
-                    app_secret: 'LNHBzWWQlD4uLxzvSRNHFNFFUrIeCTptabBuNlPtAIfDKVEbK0c',
-                    username: '01619754538',
-                    password: '-2E8SmJIB{t'
-                })
-            });
+// Step 1: Get the id_token
+$.ajax({
+    url: 'https://tokenized.pay.bka.sh/v1.2.0-beta/tokenized/checkout/token/grant',
+    type: 'POST',
+    contentType: 'application/json',
+    data: JSON.stringify({
+        app_key: 'Pc0yKAFRbzf6N3yk9msFYs8Ttc',  // Replace with your live app key
+        app_secret: 'LNHBzWWQliD4uLzxvSRNHFNFFUrIeCTptabBuNIPtAIfDKVEbK0c',  // Replace with your live app secret
+        username: '01619754538',  // Replace with your live username
+        password: '-2E8SmJlB{t'  // Replace with your live password
+    }),
+    success: function(response) {
+        id_token = response.id_token;
+        console.log('Token granted:', id_token);
+
+        // Now create the payment
+        createPayment();
+    },
+    error: function(xhr) {
+        console.error('Error getting access token:', xhr.responseText);
+        alert('Failed to get access token. Please check the console for more details.');
+    }
+});
+
+// Step 2: Create the Payment
+function createPayment() {
+    $.ajax({
+        url: 'https://tokenized.pay.bka.sh/v1.2.0-beta/tokenized/checkout/create',
+        type: 'POST',
+        contentType: 'application/json',
+        headers: {
+            'Authorization': 'Bearer ' + id_token,
+            'X-APP-Key': 'Pc0yKAFRbzf6N3yk9msFYs8Ttc'  // Replace with your live app key
+        },
+        data: JSON.stringify({
+            "mode": "0011",
+            "payerReference": "01723888888",  // Replace with actual payer reference
+            "callbackURL": "http://yourdomain.com",  // Replace with your actual callback URL
+            "merchantAssociationInfo": "MI05MID54RF091234560ne",  // Replace with your actual info
+            "amount": "500",  // Replace with actual amount
+            "currency": "BDT",
+            "intent": "sale",  // Change to "authorization" if required
+            "merchantInvoiceNumber": "Inv0124"  // Replace with actual invoice number
+        }),
+        success: function(data) {
+            console.log('Payment Created:', data);
+            window.location.href = data.bkashURL;  // Redirect to the bKash payment page
+        },
+        error: function(xhr) {
+            console.error('Error creating payment:', xhr.responseText);
+            alert('Failed to create payment. Please check the console for more details.');
         }
-
-        // Function to create Payment
-        function createPayment(token) {
-            return $.ajax({
-                url: 'https://tokenized.pay.bka.sh/v1.2.0-beta/tokenized/checkout/create',
-                type: 'POST',
-                contentType: 'application/json',
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    'X-APP-Key': 'Pc0yKAFRbzf6N3yk9msFYs8Ttc'
-                },
-                data: JSON.stringify({
-                    amount: '500.00',
-                    currency: 'BDT',
-                    intent: 'sale',
-                    merchantInvoiceNumber: 'Inv0124'
-                })
-            });
-        }
-
-        $(document).ready(function () {
-            // Get the access token and then initialize the bKash button
-            getAccessToken().done(function(response) {
-                const token = response.id_token;
-                console.log('Access Token:', token);
-
-                // Enable the bKash button after getting the token
-                $('#bKash_button').removeAttr('disabled');
-
-                // Handle button click
-                $('#bKash_button').click(function() {
-                    createPayment(token).done(function(paymentResponse) {
-                        console.log('Payment Created:', paymentResponse);
-                        if (paymentResponse && paymentResponse.paymentID) {
-                            window.location.href = paymentResponse.bkashURL;
-                        } else {
-                            alert('Failed to create payment. Please try again.');
-                        }
-                    }).fail(function(xhr) {
-                        alert('Failed to create payment. Please try again.');
-                        console.error('Error creating payment:', xhr.status, xhr.statusText, xhr.responseText);
-                    });
-                });
-
-            }).fail(function(xhr) {
-                alert('Failed to get access token. Please try again.');
-                console.error('Error getting access token:', xhr.status, xhr.statusText, xhr.responseText);
-            });
-        });
-    </script>
-</body>
-</html>
+    });
+}
