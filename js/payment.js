@@ -1,48 +1,97 @@
-$(document).ready(function() {
-    var accessToken = '';  // This will store the access token
+document.addEventListener('DOMContentLoaded', function () {
+    var paymentID;
 
-    // Step 1: Generate the Access Token using CORS proxy
+    // Step 1: Generate the Access Token
     function generateAccessToken() {
-        console.log('Attempting to generate access token...');
-        $.ajax({
-            url: 'https://cors-anywhere.herokuapp.com/https://tokenized.sandbox.bka.sh/v1.2.0-beta/tokenized/checkout/token/grant',
-            type: 'POST',
-            contentType: 'application/json',
-            data: JSON.stringify({
-                app_key: '0vWQuCRGiUX7EPVjQDr0EUAYtc',  // Your App Key
-                app_secret: 'jcUNPBgbcqEDedNKdvE4GIcAK7D3hCjmJccNPZZBq96QlxxwA'  // Your App Secret
-            }),
-            success: function(response) {
-                console.log('Access token generated successfully:', response);
-                accessToken = response.id_token;
-                console.log('Access Token:', accessToken);
-
-                // Enable the bKash button after generating the token
-                $('#bKash_button').removeAttr('disabled');
-            },
-            error: function(xhr, status, error) {
-                console.error('Error generating access token:', xhr.status, xhr.statusText, xhr.responseText);
-                if (xhr.status === 403) {
-                    alert('403 Forbidden: Please check your API credentials or contact bKash support.');
-                } else if (xhr.status === 401) {
-                    alert('401 Unauthorized: Your API key and secret might be incorrect.');
-                } else {
-                    alert('Error: ' + xhr.status + ' - ' + xhr.statusText);
-                }
+        return fetch('https://tokenized.pay.bka.sh/v1.2.0-beta/tokenized/checkout/token/grant', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'username': '01619754538',  // Your live username
+                'password': 'your_password', // Your live password
+                'app_key': 'Pc0yKAFRbzf6N3yk9msFYs8Ttc', // Your live app key
+                'app_secret': 'LNHbzWWQiD4uLxzvSRNHFNFFUrleCTptabBuNIPtA1fDKVEbK0c' // Your live app secret
             }
-        });
+        })
+        .then(response => response.json())
+        .then(data => data.id_token)
+        .catch(error => console.error('Error generating access token:', error));
     }
 
-    // Initialize bKash when the script is loaded
-    $.getScript('https://scripts.sandbox.bka.sh/versions/1.2.0-beta/checkout/bKash-checkout-sandbox.js')
-        .done(function(script){
-            console.log('bKash script loaded.');
-            generateAccessToken();  // Generate access token first
+    // Step 2: Initialize bKash
+    function initBkash() {
+        bKash.init({
+            paymentMode: 'checkout',
+            paymentRequest: {
+                amount: '100', // Your transaction amount
+                intent: 'sale'
+            },
+
+            createRequest: function (request) {
+                generateAccessToken().then(function (token) {
+                    fetch('https://tokenized.pay.bka.sh/v1.2.0-beta/tokenized/checkout/create', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(request)
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data && data.paymentID != null) {
+                            paymentID = data.paymentID;
+                            bKash.create().onSuccess(data); // Pass the paymentID to bKash
+                        } else {
+                            bKash.create().onError(); // Run cleanup on error
+                            alert('Failed to create payment. Please try again.');
+                        }
+                    })
+                    .catch(error => {
+                        bKash.create().onError(); // Run cleanup on error
+                        console.error('Error creating payment:', error);
+                    });
+                });
+            },
+
+            executeRequestOnAuthorization: function () {
+                fetch('https://tokenized.pay.bka.sh/v1.2.0-beta/tokenized/checkout/execute', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ paymentID: paymentID })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.paymentID != null) {
+                        // Payment was successful, redirect to a success page
+                        window.location.href = '/success_page.html';
+                    } else {
+                        bKash.execute().onError(); // Run cleanup on error
+                        alert('Failed to execute payment. Please try again.');
+                    }
+                })
+                .catch(error => {
+                    bKash.execute().onError(); // Run cleanup on error
+                    console.error('Error executing payment:', error);
+                });
+            },
+
+            onClose: function () {
+                alert('Payment was canceled.');
+            }
         });
 
-    // Trigger the payment process on button click
-    $('#bKash_button').click(function() {
-        console.log('bKash button clicked.');
-        bKash.requestPermission();
+        // Enable the bKash button after initialization
+        document.getElementById('bKash_button').removeAttribute('disabled');
+    }
+
+    // Step 3: Load bKash script and initialize
+    $.getScript('https://scripts.pay.bka.sh/versions/1.2.0-beta/checkout/bKash-checkout-sandbox.js')
+    .done(function(script) {
+        console.log('bKash script loaded.');
+        initBkash(); // Initialize bKash after script is loaded
     });
 });
