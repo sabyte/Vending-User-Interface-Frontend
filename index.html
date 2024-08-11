@@ -1,54 +1,61 @@
-<!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment with bKash</title>
-    
-    <!-- Include jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <h1>Payment with bKash</h1>
     <button id="bKash_button">Pay with bKash</button>
 
-    <!-- bKash payment integration script -->
     <script>
-        let id_token = "eyJraWQiOiJEWXd6RU9Fd3h5Q3lkRVwvUnJZU1BOcGk5MENBQkVBeHZ0bUs1QXQ4XC9oaVk9IiwiYWxnIjoiUlMyNTYifQ.eyJzdWIiOiI4YWIzYWMxZi1hNWUxLTQzMzEtYWRjNS0xZDBkYTliODE4NzkiLCJhdWQiOiJrNW1xNmJlaWs0aWR2ZDkxcDRmdGV0cHYzIiwiZXZlbnRfaWQiOiI4YjcyOTgyZi1lMDMxLTQxMWYtODIxNS0zYzQ1ZTU1NGRlMzYiLCJ0b2tlbl91c2UiOiJpZCIsImF1dGhfdGltZSI6MTcyMzQxNzY4MiwiaXNzIjoiaHR0cHM6XC9cL2NvZ25pdG8taWRwLmFwLXNvdXRoZWFzdC0xLmFtYXpvbmF3cy5jb21cL2FwLXNvdXRoZWFzdC0xX1QzVktDZzJoeSIsImNvZ25pdG86dXNlcm5hbWUiOiIwMTYxOTc1NDUzOCIsImV4cCI6MTcyMzQyMTI4MiwiaWF0IjoxNzIzNDE3NjgyfQ.HH_ztnXvotJgdw_CUDuowQY1omwrnMXqLZ-iygYnL5-f8mVzMleXZ7GEBnzrEgAuKWNZWRp7Vf7tbICMoQnWg2_mCmOPz3Ch9Xg0HsMm-XK3WcddIxrf5-5cYnJ28sO69EGJE6GniKvbWd3VwgAf4oFOfXC6wiqA0Lm21Kt3uys_cdL6NCMn4is3jw52S52yO17MmCFMq7XiZ_8_ygDC8UoBNFaWAA5KR-c_3Y6x7J6LX6Usk73DXbFk4V5qSv3a63tUym8kkGI3e3cemLsIZhLzICEEoFJH1TpBwfw7cSj484mY-MGhqSVN7NB0cHPpYd21ZrglAw5OWlh1lB-qjg";
-        let app_key = "Pc0yKAFRbzf6N3yk9msFYs8Ttc";
-
-        function createPayment() {
+        $('#bKash_button').click(function () {
+            // Step 1: Get the id_token from your backend
             $.ajax({
-                url: 'https://tokenized.pay.bka.sh/v1.2.0-beta/tokenized/checkout/create',
+                url: 'https://backend-8duy.onrender.com/grant-token',
                 type: 'POST',
                 contentType: 'application/json',
-                headers: {
-                    'Authorization': 'Bearer ' + id_token,
-                    'X-App-Key': app_key
-                },
                 data: JSON.stringify({
-                    "mode": "0011",
-                    "payerReference": "01723888888", // Replace with actual payer reference
-                    "callbackURL": "https://dashboard.render.com/", // Replace with your actual callback URL
-                    "merchantAssociationInfo": "MI05MID54RF09123456One", // Replace with actual info
-                    "amount": "500", // Replace with the amount
-                    "currency": "BDT",
-                    "intent": "sale",
-                    "merchantInvoiceNumber": "Inv0124" // Replace with the actual invoice number
+                    app_key: 'Pc0yKAFRbzf6N3yk9msFYs8Ttc',
+                    app_secret: 'LNHBzWWQliD4uLzxvSRNHFNFFUrIeCTptabBuNIPtAIfDKVEbK0c',
+                    username: '01619754538',
+                    password: '-2E8SmJIB{t'
                 }),
-                success: function(data) {
-                    console.log('Payment Created:', data);
-                    window.location.href = data.bkashURL; // Redirect to the bKash payment page
+                success: function (response) {
+                    let id_token = response.id_token;
+
+                    // Step 2: Create the payment using your backend
+                    $.ajax({
+                        url: 'https://backend-8duy.onrender.com/create-payment',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        headers: {
+                            'Authorization': 'Bearer ' + id_token,
+                            'X-App-Key': 'Pc0yKAFRbzf6N3yk9msFYs8Ttc'
+                        },
+                        data: JSON.stringify({
+                            mode: '0011',
+                            payerReference: '01723888888',
+                            callbackURL: 'https://vending-user-interface-frontend.onrender.com',
+                            merchantAssociationInfo: 'MI05MID54RF09123456One',
+                            amount: '500',
+                            currency: 'BDT',
+                            intent: 'sale',
+                            merchantInvoiceNumber: 'Inv0124'
+                        }),
+                        success: function (data) {
+                            console.log('Payment Created:', data);
+                            window.location.href = data.bkashURL; // Redirect to the bKash payment page
+                        },
+                        error: function (xhr) {
+                            console.error('Error creating payment:', xhr.responseText);
+                            alert('Failed to create payment. Please check the console for more details.');
+                        }
+                    });
                 },
-                error: function(xhr) {
-                    console.error('Error creating payment:', xhr.responseText);
-                    alert('Failed to create payment. Please check the console for more details.');
+                error: function (xhr) {
+                    console.error('Error getting access token:', xhr.responseText);
+                    alert('Failed to get access token. Please check the console for more details.');
                 }
             });
-        }
-
-        $('#bKash_button').click(function() {
-            createPayment();
         });
     </script>
 </body>
