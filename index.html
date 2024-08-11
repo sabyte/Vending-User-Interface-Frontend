@@ -4,46 +4,83 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment with bKash</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    
+    <!-- Include jQuery -->
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    
+    <!-- Include the bKash Checkout Script -->
     <script src="https://scripts.sandbox.bka.sh/versions/1.2.0-beta/checkout/bKash-checkout-sandbox.js"></script>
 </head>
 <body>
-    <h2>Payment with bKash</h2>
-    <button id="bKash_button" disabled>Pay with bKash</button>
+    <div class="container mt-5">
+        <h2>Payment with bKash</h2>
+        <button id="bKash_button" class="btn btn-primary" disabled>Pay with bKash</button>
+    </div>
 
     <script>
-        $(document).ready(function() {
-            console.log('Document is ready');
-
-            // Initialize bKash after the script is loaded
-            bKash.init({
-                paymentMode: 'checkout', // Options: 'checkout' or 'addWalletOnly'
-                paymentRequest: {
-                    amount: '100', // Example amount
-                    intent: 'sale' // 'sale' for immediate transaction
-                },
-
-                createRequest: function(request) {
-                    // Dummy implementation for GitHub Pages
-                    console.log('Create request initialized');
-                    const data = { paymentID: '1234567890' };
-                    bKash.create().onSuccess(data);
-                },
-
-                executeRequestOnAuthorization: function() {
-                    // Dummy implementation for GitHub Pages
-                    console.log('Execute request initialized');
-                    window.location.href = 'success.html';
-                },
-
-                onClose: function() {
-                    console.log('Payment window closed');
-                }
+        // Function to generate Access Token
+        function getAccessToken() {
+            return $.ajax({
+                url: 'https://tokenized.pay.bka.sh/v1.2.0-beta/tokenized/checkout/token/grant',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    app_key: 'Pc0yKAFRbzf6N3yk9msFYs8Ttc',
+                    app_secret: 'LNHBzWWQlD4uLxzvSRNHFNFFUrIeCTptabBuNlPtAIfDKVEbK0c',
+                    username: '01619754538',
+                    password: '-2E8SmJIB{t'
+                })
             });
+        }
 
-            // Enable the bKash button after initialization
-            $('#bKash_button').removeAttr('disabled');
-            console.log('bKash button enabled');
+        // Function to create Payment
+        function createPayment(token) {
+            return $.ajax({
+                url: 'https://tokenized.pay.bka.sh/v1.2.0-beta/tokenized/checkout/create',
+                type: 'POST',
+                contentType: 'application/json',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'X-APP-Key': 'Pc0yKAFRbzf6N3yk9msFYs8Ttc'
+                },
+                data: JSON.stringify({
+                    amount: '500.00',
+                    currency: 'BDT',
+                    intent: 'sale',
+                    merchantInvoiceNumber: 'Inv0124'
+                })
+            });
+        }
+
+        $(document).ready(function () {
+            // Get the access token and then initialize the bKash button
+            getAccessToken().done(function(response) {
+                const token = response.id_token;
+                console.log('Access Token:', token);
+
+                // Enable the bKash button after getting the token
+                $('#bKash_button').removeAttr('disabled');
+
+                // Handle button click
+                $('#bKash_button').click(function() {
+                    createPayment(token).done(function(paymentResponse) {
+                        console.log('Payment Created:', paymentResponse);
+                        if (paymentResponse && paymentResponse.paymentID) {
+                            window.location.href = paymentResponse.bkashURL;
+                        } else {
+                            alert('Failed to create payment. Please try again.');
+                        }
+                    }).fail(function(xhr) {
+                        alert('Failed to create payment. Please try again.');
+                        console.error('Error creating payment:', xhr.status, xhr.statusText, xhr.responseText);
+                    });
+                });
+
+            }).fail(function(xhr) {
+                alert('Failed to get access token. Please try again.');
+                console.error('Error getting access token:', xhr.status, xhr.statusText, xhr.responseText);
+            });
         });
     </script>
 </body>
