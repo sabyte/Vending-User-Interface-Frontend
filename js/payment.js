@@ -1,4 +1,6 @@
 $(document).ready(function() {
+    console.log('Document is ready');
+    
     $.getScript('https://scripts.pay.bka.sh/versions/1.2.0-beta/checkout/bKash-checkout-sandbox.js')
     .done(function(script) {
         console.log('bKash script loaded successfully');
@@ -11,15 +13,13 @@ $(document).ready(function() {
             },
 
             createRequest: function(request) {
-                // Your create request logic here
                 console.log('Create request initialized');
-                // Make sure to handle this
+                // Implement your logic here
             },
 
             executeRequestOnAuthorization: function() {
-                // Your execute request logic here
                 console.log('Execute request initialized');
-                // Make sure to handle this
+                // Implement your logic here
             },
 
             onClose: function() {
