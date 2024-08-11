@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment with bKash</title>
+
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <h1>Payment with bKash</h1>
@@ -49,8 +52,8 @@
                 },
                 data: JSON.stringify({
                     "mode": "0011",
-                    "payerReference": "01723888888",
-                    "callbackURL": "http://yourdomain.com",
+                    "payerReference": "",
+                    "callbackURL": "http://localhost:3000",
                     "merchantAssociationInfo": "MI05MID54RF091234560ne",
                     "amount": "500",
                     "currency": "BDT",
