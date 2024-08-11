@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
             headers: {
                 'Content-Type': 'application/json',
                 'username': '01619754538',  // Your live username
-                'password': 'your_password', // Your live password
+                'password': '-2E8SmJ1B{t', // Your live password
                 'app_key': 'Pc0yKAFRbzf6N3yk9msFYs8Ttc', // Your live app key
                 'app_secret': 'LNHbzWWQiD4uLxzvSRNHFNFFUrleCTptabBuNIPtA1fDKVEbK0c' // Your live app secret
             }
