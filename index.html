@@ -1,9 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment with bKash</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
@@ -16,12 +12,13 @@
             $.ajax({
                 url: 'https://backend-8duy.onrender.com/grant-token',
                 type: 'POST',
-                headers: {
-                'contentType': 'application/json',
-                'Accept': 'application/json'
-                'username' = '01619754538';
-                'password' = '-2E8SmJIB{t'
-                }
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    app_key: 'Pc0yKAFRbzf6N3yk9msFYs8Ttc',
+                    app_secret: 'LNHBzWWQliD4uLxzvSRNHFNFFUrIeCTptabBuNIPtAIfDKVEbK0c',
+                    username: '01619754538',
+                    password: '-2E8SmJIB{t'
+                }),
                 success: function (response) {
                     let id_token = response.id_token;
 
@@ -29,11 +26,13 @@
                     $.ajax({
                         url: 'https://backend-8duy.onrender.com/create-payment',
                         type: 'POST',
+                        contentType: 'application/json',
                         headers: {
-                    'contentType': 'application/json',
-                    'Accept': 'application/json',
+                            'Accept': 'application/json',
                             'Authorization': 'Bearer ' + id_token,
-                            'X-App-Key': 'Pc0yKAFRbzf6N3yk9msFYs8Ttc'
+                            'X-App-Key': 'Pc0yKAFRbzf6N3yk9msFYs8Ttc',
+                            'username': '01619754538',
+                            'password': '-2E8SmJIB{t'
                         },
                         data: JSON.stringify({
                             mode: '0011',
