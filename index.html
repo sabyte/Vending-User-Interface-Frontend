@@ -16,8 +16,10 @@
             $.ajax({
                 url: 'https://backend-8duy.onrender.com/grant-token',
                 type: 'POST',
-                contentType: 'application/json',
-                Accept: 'application/json',
+                headers: {
+                'contentType': 'application/json',
+                'Accept': 'application/json'
+                }
                 success: function (response) {
                     let id_token = response.id_token;
 
@@ -25,8 +27,9 @@
                     $.ajax({
                         url: 'https://backend-8duy.onrender.com/create-payment',
                         type: 'POST',
-                        contentType: 'application/json',
                         headers: {
+                    'contentType': 'application/json',
+                    'Accept': 'application/json',
                             'Authorization': 'Bearer ' + id_token,
                             'X-App-Key': 'Pc0yKAFRbzf6N3yk9msFYs8Ttc'
                         },
