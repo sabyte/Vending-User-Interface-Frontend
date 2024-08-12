@@ -29,11 +29,12 @@
                     $.ajax({
                         url: 'https://backend-8duy.onrender.com/create-payment',
                         type: 'POST',
-                        contentType: 'application/json',
-                        Accept: 'application/json',
-                        Authorization: 'Bearer ' + id_token,
-                        X-App-Key: 'Pc0yKAFRbzf6N3yk9msFYs8Ttc',
-               
+                        headers: {
+                        'contentType': 'application/json',
+                        'Accept': 'application/json',
+                        'Authorization': 'Bearer ' + id_token,
+                        'X-App-Key': 'Pc0yKAFRbzf6N3yk9msFYs8Ttc',
+                        }
                         data: JSON.stringify({
                             mode: '0011',
                             payerReference: '.',
