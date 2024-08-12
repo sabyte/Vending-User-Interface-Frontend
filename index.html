@@ -1,5 +1,9 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment with bKash</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
@@ -13,15 +17,6 @@
                 url: 'https://backend-8duy.onrender.com/grant-token',
                 type: 'POST',
                 contentType: 'application/json',
-                Accept: 'application/json',
-                username: '01619754538',
-                password: '-2E8SmJIB{t'
-                data: JSON.stringify({
-                    app_key: 'Pc0yKAFRbzf6N3yk9msFYs8Ttc',
-                    app_secret: 'LNHBzWWQliD4uLxzvSRNHFNFFUrIeCTptabBuNIPtAIfDKVEbK0c',
-                    username: '01619754538',
-                    password: '-2E8SmJIB{t',
-                }),
                 success: function (response) {
                     let id_token = response.id_token;
 
@@ -29,18 +24,17 @@
                     $.ajax({
                         url: 'https://backend-8duy.onrender.com/create-payment',
                         type: 'POST',
+                        contentType: 'application/json',
                         headers: {
-                        'contentType': 'application/json',
-                        'Accept': 'application/json',
-                        'Authorization': 'Bearer ' + id_token,
-                        'X-App-Key': 'Pc0yKAFRbzf6N3yk9msFYs8Ttc',
-                        }
+                            'Authorization': 'Bearer ' + id_token,
+                            'X-App-Key': 'Pc0yKAFRbzf6N3yk9msFYs8Ttc'
+                        },
                         data: JSON.stringify({
                             mode: '0011',
-                            payerReference: '.',
-                            callbackURL: 'http://localhost:10000',
+                            payerReference: '01723888888',
+                            callbackURL: 'https://vending-user-interface-frontend.onrender.com',
                             merchantAssociationInfo: 'MI05MID54RF09123456One',
-                            amount: '5',
+                            amount: '500',
                             currency: 'BDT',
                             intent: 'sale',
                             merchantInvoiceNumber: 'Inv0124'
